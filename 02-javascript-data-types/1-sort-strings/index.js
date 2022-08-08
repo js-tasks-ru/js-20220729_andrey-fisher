@@ -5,5 +5,18 @@
  * @returns {string[]}
  */
 export function sortStrings(arr, param = 'asc') {
+  // при вводе param вне ожидаемых значений
+  // direction[param] возвращает undefined
+  // и исходный массив возвращается в исходном виде (неотсортированным)
+  const direction = {
+    asc: 1,
+    desc: -1
+  };
 
+  return [...arr].sort( (a, b) => {
+    return direction[param] * a
+      .localeCompare(b, 
+        ['ru', 'en'],
+        {caseFirst: 'upper'});
+  });
 }
