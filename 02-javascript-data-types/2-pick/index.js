@@ -5,5 +5,15 @@
  * @returns {object} - returns the new object
  */
 export const pick = (obj, ...fields) => {
+  const result = {};
+  const objProps = Object.keys(obj);
 
+  for (const item in fields) {
+    const propName = fields[item];
+    if (objProps.indexOf(propName) >= 0) {
+      result[propName] = obj[propName];
+    }
+  }
+
+  return result;
 };
