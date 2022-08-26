@@ -1,13 +1,20 @@
 export default class ColumnChart {
-  chartHeight = 50;
   chartBody = {};
+  element = {};
 
-  constructor(params) {
-    this.data = params.data;
-    this.label = params.label;
-    this.value = params.value;
-    this.link = params.link;
-    this.formatHeading = params.formatHeading;
+  constructor({
+    data = [],
+    label = "",
+    link = "",
+    value = 0,
+    formatHeading = data => data,
+  } = {}) {
+    this.data = data;
+    this.label = label;
+    this.value = value;
+    this.link = link;
+    this.formatHeading = formatHeading;
+    this.chartHeight = 50;
 
     this.render();
   }
@@ -15,7 +22,7 @@ export default class ColumnChart {
   render() {
     let main = document.createElement('div');
     main.className = "column-chart column-chart_loading";
-    main.style.cssText += "--chart-height: 50";
+    main.style.cssText = "--chart-height: 50";
     let title = document.createElement('div');
     title.className = "column-chart__title";
     title.innerText = " Total " + this.label;
@@ -77,12 +84,12 @@ export default class ColumnChart {
   }
 
   remove() {
-    if (this.chartBody) {
-      this.chartBody.remove();
-    }
+    this.element.remove();
+    this.chartBody.remove();
   }
 
   destroy() {
+    this.element = null;
     this.chartBody = null;
   }
 }
