@@ -1,5 +1,5 @@
 export default class ColumnChart {
-  chartBody = {};
+  cBody = {};
   element = {};
 
   constructor({
@@ -18,78 +18,83 @@ export default class ColumnChart {
 
     this.render();
   }
-
-  render() {
-    let main = document.createElement('div');
-    main.className = "column-chart column-chart_loading";
-    main.style.cssText = "--chart-height: 50";
-    let title = document.createElement('div');
-    title.className = "column-chart__title";
-    title.innerText = " Total " + this.label;
-    if (this.link) {
-      let link = document.createElement('a');
-      link.className = "column-chart__link";
-      link.href = this.link;
-      link.innerText = 'View all';
-      title.append(link);
-    }
-    main.append(title);
-
-    let container = document.createElement('div');
-    container.className = "column-chart__container";
-    if (this.value) {
-      let cHeader = document.createElement('div');
-      cHeader.className = "column-chart__header";
-      cHeader.setAttribute('data-element', 'header');
-      cHeader.textContent = this.formatHeading && this.value ? this.formatHeading(this.value.toLocaleString('en-US')) : this.value.toLocaleString('en-US');
-      container.append(cHeader);
-    }
-
-    this.chartBody = document.createElement('div');
-    this.chartBody.className = "column-chart__chart";
-    this.chartBody.setAttribute('data-element', 'body');
-
-    if (this.data && this.data.length !== 0) {
-      this.renderData(this.data);
-      main.classList.remove('column-chart_loading');
-    }
-    container.append(this.chartBody);
-
-    main.append(container);
-
-    this.element = main;
+  
+  get template() {
+    return `
+      <div class="column-chart column-chart_loading" style="--chart-height: ${ this.chartHeight }">
+        <div class="column-chart__title">
+          Total ${this.label}
+          ${this.getLink()}
+        </div>
+        <div class="column-chart__container">
+           <div data-element="header" class="column-chart__header">
+             ${this.getValue()}
+           </div>
+          <div data-element="body" class="column-chart__chart">
+            ${this.getColumnBody()}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  renderData(data) {
-    if (!data || !data.length) {
+  getLink() {
+    return this.link
+      ? `<a class="column-chart__link" href="${this.link}">View all</a>`
+      : '';
+  }  
+  
+  getValue() {
+    return this.formatHeading ? this.formatHeading(this.value.toLocaleString('en-US')) : this.value.toLocaleString('en-US');
+  }
+
+  getColumnBody() {
+    if (!this.data || !this.data.length) {
       return;
     }
-    const maxValue = Math.max(...data);
+    
+    const maxValue = Math.max(...this.data);
     const scaleValue = this.chartHeight / maxValue;
     const scalePercent = 100 / maxValue;
 
-    for (const i in data) {
-      let d = document.createElement('div');
-      d.style.cssText = "--value: " + Math.floor(data[i] * scaleValue);
-      d.setAttribute('data-tooltip', Math.round(data[i] * scalePercent) + '%');
-      this.chartBody.append(d);
+    return this.data
+      .map(item => {
+        return `<div style="--value: ${Math.floor(item * scaleValue)}" data-tooltip="${Math.round(item * scalePercent)}%"></div>`;
+      })
+      .join("");
+  }
+  
+  render() {
+    const main = document.createElement('div');
+    main.innerHTML = this.template;
+    this.element = main.firstElementChild;
+
+    if (this.data && this.data.length) {
+      this.element.classList.remove("column-chart_loading");
     }
+
+    this.element = main.firstElementChild;
+
+    this.cBody = this.element.querySelectorAll("[data-element='body']")[0];
   }
 
   update(newData = []) {
-    while (this.chartBody.lastElementChild) {
-      this.chartBody.removeChild(this.chartBody.lastElementChild);
+    if (!this.data.length) {
+      this.element.classList.add("column-chart_loading");
     }
-    this.renderData(newData);
+
+    this.data = newData;
+
+    this.cBody.innerHTML = this.getColumnBody();
   }
 
   remove() {
     this.element.remove();
-    this.chartBody.remove();
   }
 
   destroy() {
+    this.remove();
     this.element = null;
-    this.chartBody = null;
+    this.cBody = null;
   }
 }
